@@ -1,0 +1,37 @@
+aci,,,,,,cdl,,
+Value,New classification,Old classification,,,,Value,New_classification,Old_classification
+20,NotAvailable,Water,,,,1,Open,Corn
+30,Open,Exposed Land and Barren,,,,5,Open,Soybeans
+34,Open,Urban and developed,,,,6,Open,Sunflower
+35,Open,Greenhouses,,,,21,Open,Barley
+50,Closed,Shrubland,,,,23,Open,Spring Wheat
+80,Open,Wetland,,,,27,Open,Rye
+110,Open,Grassland,,,,28,Open,Oats
+122,Open,Pasture and Forages,,,,29,Open,Millet
+133,Open,Barley,,,,31,Open,Canola
+135,Open,Millet,,,,32,Open,Flaxseed
+136,Open,Oats,,,,36,Open,Alfalfa
+137,Open,Rye,,,,37,Open,Other Hay
+145,Open,Winter Wheat,,,,41,Open,Sugarbeets
+146,Open,Spring Wheat,,,,42,Open,Dry beans
+147,Open,Corn,,,,43,Open,Potatoes
+153,Open,Canola and Rapeseed,,,,44,Open,Other crops
+154,Open,Flaxseed,,,,53,Open,Peas
+157,Open,Sunflower,,,,58,Open,Clover/wildflowers
+158,Open,Soybeans,,,,59,Open,Sod/Grass seed
+162,Open,Peas,,,,61,Open,Fallow/idle cropland
+167,Open,Beans,,,,111,NotAvailable,Open water
+177,Open,Potatoes,,,,121,Open,Developed/open space
+193,Open,Herbs,,,,122,Open,Developed/low intensity
+197,Open,Hemp,,,,123,Open,Developed/med intensity
+210,Closed,Coniferous,,,,124,Open,Developed/high intensity
+220,Closed,Broadleaf,,,,131,Open,Barren
+230,Closed,Mixed wood,,,,141,Closed,Deciduous forest
+130,Open,Too wet to be seeded,,,,142,Closed,Evergreen forest
+134,Open,Other grains,,,,143,Closed,Mixed forest
+139,Open,Triticale,,,,152,Closed,Shrubland
+143,Open,Sorghum,,,,176,Open,Grassland/Pasture
+192,Open,Sod,,,,190,Closed,Woody wetlands
+195,Open,Buckwheat,,,,195,Closed,Herbaceous wetlands
+,,,,,,4,Open,Sorghum
+,,,,,,24,Open,Winter Wheat
