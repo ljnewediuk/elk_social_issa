@@ -34,40 +34,79 @@ set.seed(123456)
 C_10 <- glmmTMB(case_ ~ 
                    ## step length
                    I(log(sl_+1)) + 
-                   I(log(sl_+1)):Calving +
-                   I(log(sl_+1)):I(log(StartDist + 1))+
+                   # I(log(sl_+1)):Calving +
+                   # I(log(sl_+1)):I(log(StartDist + 1))+
                    I(log(sl_+1)):I(log(sri_startNN+0.125))+
-                   I(log(sl_+1)):Wang_Start_NN+
+                   # I(log(sl_+1)):Wang_Start_NN+
                    
                    #Timing variables
                    Year+
                    
                    ## social variables in interactions with movement and habitat 
-                   I(log(EndDist + 1)) + 
-                   I(log(EndDist + 1)):Calving + 
+                   # I(log(EndDist + 1)) + 
+                   # I(log(EndDist + 1)):Calving + 
                    I(log(sri_EndNN+0.125)) +
-                    I(log(sri_EndNN+0.125)):Calving +
-                   Wang_End_NN +
-                   Wang_End_NN: Calving +
+                   #  I(log(sri_EndNN+0.125)):Calving +
+                   # Wang_End_NN +
+                   # Wang_End_NN: Calving +
                    
                    ## random effects  
                    (1|elk_step_id_) + 
                    (0 + I(log(sl_+1))| ANIMAL_ID) + 
-                   (0 + I(log(sl_+1)):Calving | ANIMAL_ID) +
-                    (0 + I(log(sl_+1)):I(log(StartDist + 1)) | ANIMAL_ID) +
+                   # (0 + I(log(sl_+1)):Calving | ANIMAL_ID) +
+                   #  (0 + I(log(sl_+1)):I(log(StartDist + 1)) | ANIMAL_ID) +
                     (0 + I(log(sl_+1)):I(log(sri_startNN+0.125)) | ANIMAL_ID) +
-                   (0 + I(log(sl_+1)):Wang_Start_NN | ANIMAL_ID) +
-                   (0 + I(log(EndDist + 1)) | ANIMAL_ID)+
-                   (0 +  I(log(EndDist + 1)):Calving| ANIMAL_ID)+
-                   (0 + I(log(sri_EndNN+0.125)) | ANIMAL_ID)+
-                   (0 + I(log(sri_EndNN+0.125)):Calving| ANIMAL_ID) +
-                   (0 + Wang_End_NN | ANIMAL_ID)+
-                  (0 + Wang_End_NN: Calving| ANIMAL_ID),
+                  #  (0 + I(log(sl_+1)):Wang_Start_NN | ANIMAL_ID) +
+                  #  (0 + I(log(EndDist + 1)) | ANIMAL_ID)+
+                  #  (0 +  I(log(EndDist + 1)):Calving| ANIMAL_ID)+
+                  #  (0 + I(log(sri_EndNN+0.125)) | ANIMAL_ID)+
+                  #  (0 + I(log(sri_EndNN+0.125)):Calving| ANIMAL_ID) +
+                  #  (0 + Wang_End_NN | ANIMAL_ID)+
+                  # (0 + Wang_End_NN: Calving| ANIMAL_ID),
                  
                  family=poisson(), 
                  data = DT,  
-                 map = list(theta=factor(c(NA,1:19))), 
-                 start = list(theta=c(log(1000), seq(0,0, length.out = 19))))
+                 map = list(theta=factor(c(NA,1:2))), 
+                 start = list(theta=c(log(1000), seq(0,0, length.out = 3))))
+
+n_thetas <- length(tmp$parameters$theta)
+
+# Calculate nvar_parm
+nvar_parm = (n_thetas) - 1
+
+# Model covariates
+model_covs <-  c('I(log(sl_+1))',
+                 'I(log(sl_+1)):I(log(sri_startNN+0.125))',
+                 'I(log(sri_EndNN+0.125))',
+                 '(1|elk_step_id_)',
+                 '(0 + I(log(sl_+1))| ANIMAL_ID)',
+                 '(0 + I(log(sl_+1)):I(log(sri_startNN+0.125)) | ANIMAL_ID)')
+
+# Fit temp model to figure out variance-covariance structure
+tmp <- glmmTMB(
+  reformulate(model_covs, response = "case_"),
+  family = poisson(),
+  data = DT
+)
+
+# Function to fit models
+fit_mod <- function(covs, nvar_parm, dat) {
+  # Set up model without fitting
+  model_form <- suppressWarnings(
+    glmmTMB(reformulate(covs, response = 'case_'),
+            family = poisson(), 
+            map = list(theta = factor(c(NA, 1:nvar_parm))),
+            data = dat, doFit = F))
+  # Set variance of random intercept to 10^6
+  model_form$parameters$theta[1] <- log(1e6)
+  # Fit model using large fixed variance
+  model_fit <- glmmTMB:::fitTMB(model_form)
+  # Return the glmmTMB object
+  return(model_fit)
+}
+
+# Fit "full" model
+model_f <- fit_mod(model_covs, 7, DT)
 
 
 summary(C_10)
