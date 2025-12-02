@@ -69,18 +69,20 @@ C_10 <- glmmTMB(case_ ~
                  map = list(theta=factor(c(NA,1:2))), 
                  start = list(theta=c(log(1000), seq(0,0, length.out = 3))))
 
-n_thetas <- length(tmp$parameters$theta)
-
-# Calculate nvar_parm
-nvar_parm = (n_thetas) - 1
-
 # Model covariates
 model_covs <-  c('I(log(sl_+1))',
-                 'I(log(sl_+1)):I(log(sri_startNN+0.125))',
-                 'I(log(sri_EndNN+0.125))',
-                 '(1|elk_step_id_)',
-                 '(0 + I(log(sl_+1))| ANIMAL_ID)',
-                 '(0 + I(log(sl_+1)):I(log(sri_startNN+0.125)) | ANIMAL_ID)')
+                 'cos(ta_)',
+                 'I(log(sl_+1))*dist_to_forest_end',
+                 'cos(ta_)*dist_to_forest_end',
+                 '(1|step_id_)',
+                 'dist_to_forest_end',
+                 'I(log(EndDist + 1))',
+                 'I(log(StartDist + 1)) * I(log(sl_ + 1))',
+                 'I(log(EndDist + 1)) * dist_to_forest_end',
+                 'I(log(sri_EndNN + 0.125)) * dist_to_forest_end',
+                 '(0 + I(log(sri_EndNN + 0.125)):I(log(sl_+1)) | ANIMAL_ID)',
+                 'I(log(sri_EndNN + 0.125)) * dist_to_forest_end',
+                 '(0 + I(log(sri_EndNN + 0.125)):dist_to_forest_end | ANIMAL_ID)')
 
 # Fit temp model to figure out variance-covariance structure
 tmp <- glmmTMB(
@@ -88,6 +90,14 @@ tmp <- glmmTMB(
   family = poisson(),
   data = DT
 )
+
+# Isolate thetas
+par_vec <- tmp$fit$par
+n_thetas <- length(par_vec[grep("^theta", names(par_vec))])
+
+# Calculate nvar_parm
+nvar_parm = (n_thetas) - 1
+
 
 # Function to fit models
 fit_mod <- function(covs, nvar_parm, dat) {
@@ -106,7 +116,7 @@ fit_mod <- function(covs, nvar_parm, dat) {
 }
 
 # Fit "full" model
-model_f <- fit_mod(model_covs, 7, DT)
+model_f <- fit_mod(model_covs, nvar_parm = nvar_parm, DT)
 
 
 summary(C_10)
