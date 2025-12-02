@@ -70,23 +70,50 @@ C_10 <- glmmTMB(case_ ~
                  start = list(theta=c(log(1000), seq(0,0, length.out = 3))))
 
 # Model covariates
-model_covs <-  c('I(log(sl_+1))',
-                 'cos(ta_)',
-                 'I(log(sl_+1))*dist_to_forest_end',
-                 'cos(ta_)*dist_to_forest_end',
-                 '(1|step_id_)',
-                 'dist_to_forest_end',
-                 'I(log(EndDist + 1))',
-                 'I(log(StartDist + 1)) * I(log(sl_ + 1))',
-                 'I(log(EndDist + 1)) * dist_to_forest_end',
-                 'I(log(sri_EndNN + 0.125)) * dist_to_forest_end',
-                 '(0 + I(log(sri_EndNN + 0.125)):I(log(sl_+1)) | ANIMAL_ID)',
-                 'I(log(sri_EndNN + 0.125)) * dist_to_forest_end',
-                 '(0 + I(log(sri_EndNN + 0.125)):dist_to_forest_end | ANIMAL_ID)')
+
+# Basic covariates
+base_covs <-  c(
+  # 'I(log(sl_ + 1))',
+  # 'cos(ta_)',
+  '(1|step_id_)'
+  )
+
+# Additional covariates to test if elk are more likely to end up farther from 
+# forest when they are closer to a herd mate
+prox_covs <- c(
+  'I(log(dist_to_forest_end + 0.125))',
+  'I(log(StartDist + 0.125))',
+  'I(log(StartDist + 0.125)):I(log(dist_to_forest_end + 0.125))',
+  '(I(log(StartDist + 0.125)) | ANIMAL_ID)',
+  '(I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)',
+  '(0 + I(log(StartDist + 0.125)):I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)'
+)
+
+# Additional covariates to test if elk are more likely to end up farther from
+# forest when they are closer to an individual with whom they share a higher SRI
+sri_covs <- c(
+  'I(log(dist_to_forest_end + 0.125))',
+  'I(log(sri_startNN + 0.125))',
+  'I(log(sri_startNN + 0.125)):I(log(dist_to_forest_end + 0.125))',
+  '(I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)',
+  '(I(log(sri_startNN + 0.125)) | ANIMAL_ID)',
+  '(0 + I(log(sri_startNN + 0.125)):I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)'
+  )
+
+# Additional covariates to test if elk are more likely to end up farther from
+# forest when they are closer to a close relative
+wang_covs <- c(
+  'I(log(dist_to_forest_end + 0.125))',
+  'I(log(Wang_Start_NN + 0.125))',
+  'I(log(Wang_Start_NN + 0.125)):I(log(dist_to_forest_end + 0.125))',
+  '(I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)',
+  '(I(log(Wang_Start_NN + 0.125)) | ANIMAL_ID)',
+  '(0 + I(log(Wang_Start_NN + 0.125)):I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)'
+)
 
 # Fit temp model to figure out variance-covariance structure
 tmp <- glmmTMB(
-  reformulate(model_covs, response = "case_"),
+  reformulate(c(base_covs, wang_covs), response = "case_"),
   family = poisson(),
   data = DT
 )
@@ -115,9 +142,13 @@ fit_mod <- function(covs, nvar_parm, dat) {
   return(model_fit)
 }
 
-# Fit "full" model
-model_f <- fit_mod(model_covs, nvar_parm = nvar_parm, DT)
-
+# Fit models
+model_sri_day <- fit_mod(c(base_covs, sri_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_prox_day <- fit_mod(c(base_covs, prox_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_wang_day <- fit_mod(c(base_covs, wang_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_sri <- fit_mod(c(base_covs, sri_covs), nvar_parm = nvar_parm, DT)
+model_prox <- fit_mod(c(base_covs, prox_covs), nvar_parm = nvar_parm, DT)
+model_wang <- fit_mod(c(base_covs, wang_covs), nvar_parm = nvar_parm, DT)
 
 summary(C_10)
 check_collinearity(C_10)
