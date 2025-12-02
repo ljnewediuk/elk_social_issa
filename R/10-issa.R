@@ -28,6 +28,19 @@ DT$Cover_start <- as.factor(DT$Cover_start)
 DT$Calving <- as.factor(DT$Calving)
 DT$IDYr <- as.factor(DT$IDYr)
 
+# Center, scale, and log
+# compute transformed vars once
+DT[, log_sl_ := log(sl_ + 1e-6)]
+DT[, cos_ta_ := cos(ta_)]
+
+DT[, ldist_forest_end := log(dist_to_forest_end + 0.125)]
+
+# center (and optionally scale)
+DT[, log_sl_c := (log_sl_ - mean(log_sl_, na.rm=TRUE))]
+DT[, cos_ta_c  := (cos_ta_  - mean(cos_ta_, na.rm=TRUE))]
+DT[, ldist_forest_end_c := (ldist_forest_end - mean(ldist_forest_end, na.rm=TRUE))]
+DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
+
 
 #Calving iSSA
 set.seed(123456)
