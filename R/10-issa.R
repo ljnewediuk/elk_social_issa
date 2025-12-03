@@ -34,16 +34,23 @@ DT[, log_sl_ := log(sl_ + 1e-6)]
 DT[, cos_ta_ := cos(ta_)]
 
 DT[, ldist_forest_end := log(dist_to_forest_end + 0.125)]
+DT[, ldist_forest_start := log(dist_to_forest_start + 0.125)]
 DT[, lsri_startNN := log(sri_startNN + 0.125)]
+DT[, lsri_endNN := log(sri_EndNN + 0.125)]
 DT[, lStartDist := log(StartDist + 0.125)]
+DT[, lEndDist := log(EndDist + 0.125)]
 
 # center (and optionally scale)
 DT[, log_sl_c := (log_sl_ - mean(log_sl_, na.rm=TRUE))]
 DT[, cos_ta_c  := (cos_ta_  - mean(cos_ta_, na.rm=TRUE))]
 DT[, ldist_forest_end_c := (ldist_forest_end - mean(ldist_forest_end, na.rm=TRUE))]
+DT[, ldist_forest_start_c := (ldist_forest_start - mean(ldist_forest_start, na.rm=TRUE))]
 DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
+DT[, Wang_End_c := (Wang_Start_NN - mean(Wang_End_NN, na.rm=TRUE))]
 DT[, lsri_start_c := (lsri_startNN - mean(lsri_startNN, na.rm=TRUE))]
+DT[, lsri_end_c := (lsri_endNN - mean(lsri_endNN, na.rm=TRUE))]
 DT[, lStartDist_c := (lStartDist - mean(lStartDist, na.rm=TRUE))]
+DT[, lEndDist_c := (lEndDist - mean(lEndDist, na.rm=TRUE))]
 
 #Calving iSSA
 set.seed(123456)
@@ -115,6 +122,26 @@ prox_covs_d <- c(
   '(0 + lStartDist_c:Cover_end | ANIMAL_ID)'
 )
 
+# Starting in open habitat
+prox_covs_s <- c(
+  'ldist_forest_start_c',
+  'lEndDist_c',
+  'ldist_forest_start_c:lEndDist_c',
+  # '(I(log(StartDist + 0.125)) | ANIMAL_ID)',
+  # '(ldist_forest_end_c | ANIMAL_ID)',
+  '(0 + lEndDist_c:ldist_forest_start_c | ANIMAL_ID)'
+)
+
+# Starting in open habitat (discrete)
+prox_covs_s_d <- c(
+  'Cover_start',
+  'lEndDist_c',
+  'Cover_start:lEndDist_c',
+  # '(I(log(StartDist + 0.125)) | ANIMAL_ID)',
+  # '(ldist_forest_end_c | ANIMAL_ID)',
+  '(0 + lEndDist_c:Cover_start | ANIMAL_ID)'
+)
+
 # Additional covariates to test if elk are more likely to end up farther from
 # forest when they are closer to an individual with whom they share a higher SRI
 # Random slopes for distance to forest, but not sri, because this does
@@ -163,7 +190,7 @@ wang_covs_d <- c(
 
 # Fit temp model to figure out variance-covariance structure
 tmp <- glmmTMB(
-  reformulate(c(base_covs, wang_covs_d), response = "case_"),
+  reformulate(c(base_covs, prox_covs_s), response = "case_"),
   family = poisson(),
   data = DT
 )
@@ -174,7 +201,6 @@ n_thetas <- length(par_vec[grep("^theta", names(par_vec))])
 
 # Calculate nvar_parm
 nvar_parm = (n_thetas) - 1
-
 
 # Function to fit models
 fit_mod <- function(covs, nvar_parm, dat) {
@@ -192,42 +218,24 @@ fit_mod <- function(covs, nvar_parm, dat) {
   return(model_fit)
 }
 
-### ISSF MODEL WITH DAY POINTS ONLY DISTANCE TO FOREST AS A PREDICTOR
-tod_dat <- read.csv('data/sunrise_sunset_2019.txt') %>%
-  rbind(read.csv('data/sunrise_sunset_2020.txt')) %>%
-  # Make column for string dates and day, year
-  mutate(Date = as.Date(Date, '%b%d%Y'),
-         # Make date columns for POSIX sunrise and sunset in EST
-         sunrise = lubridate::with_tz(paste(Date, `Sun.rise`, sep = ' '),
-                                      tzone = 'America/New_York'),
-         sunset = lubridate::with_tz(paste(Date, `Sun.set`, sep = ' '),
-                                     tzone = 'America/New_York'),
-         # Force into CST
-         sunrise = lubridate::force_tz(sunrise, tzone = 'Canada/Central'),
-         sunset = lubridate::with_tz(sunset, tzone = 'Canada/Central'),
-         # Add julian date and year
-         JDate = lubridate::yday(sunrise),
-         Year = as.factor(lubridate::year(Date))) %>%
-  dplyr::select(Year, JDate, sunrise, sunset)
-
-# Load and combine sample IDs and hormone levels
-DT_DAY_ONLY <- DT %>%
-  left_join(tod_dat) %>%
-  # Add column for day/night (if location is between sunrise and sunset)
-  mutate(TOD = ifelse(t2_ <= sunrise | t2_ > sunset, 'night', 'day'))%>%
-  #filter for day points only
-  filter(TOD == "day")
-
 # Fit models
 model_sri_day <- fit_mod(c(base_covs, sri_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
 model_prox_day <- fit_mod(c(base_covs, prox_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
 model_wang_day <- fit_mod(c(base_covs, wang_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
+
 model_sri <- fit_mod(c(base_covs, sri_covs), nvar_parm = nvar_parm, DT)
 model_prox <- fit_mod(c(base_covs, prox_covs), nvar_parm = nvar_parm, DT)
 model_wang <- fit_mod(c(base_covs, wang_covs), nvar_parm = nvar_parm, DT)
 model_sri_d <- fit_mod(c(base_covs, sri_covs_d), nvar_parm = nvar_parm, DT)
 model_prox_d <- fit_mod(c(base_covs, prox_covs_d), nvar_parm = nvar_parm, DT)
 model_wang_d <- fit_mod(c(base_covs, wang_covs_d), nvar_parm = nvar_parm, DT)
+
+model_sri_s <- fit_mod(c(base_covs, sri_covs_s), nvar_parm = nvar_parm, DT)
+model_prox_s <- fit_mod(c(base_covs, prox_covs_s), nvar_parm = nvar_parm, DT)
+model_wang_s <- fit_mod(c(base_covs, wang_covs_s), nvar_parm = nvar_parm, DT)
+model_sri_s_d <- fit_mod(c(base_covs, sri_covs_s_d), nvar_parm = nvar_parm, DT)
+model_prox_s_d <- fit_mod(c(base_covs, prox_covs_s_d), nvar_parm = nvar_parm, DT)
+model_wang_s_d <- fit_mod(c(base_covs, wang_covs_s_d), nvar_parm = nvar_parm, DT)
 
 summary(C_10)
 check_collinearity(C_10)
