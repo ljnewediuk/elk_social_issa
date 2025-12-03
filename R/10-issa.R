@@ -34,13 +34,16 @@ DT[, log_sl_ := log(sl_ + 1e-6)]
 DT[, cos_ta_ := cos(ta_)]
 
 DT[, ldist_forest_end := log(dist_to_forest_end + 0.125)]
+DT[, lsri_startNN := log(sri_startNN + 0.125)]
+DT[, lStartDist := log(StartDist + 0.125)]
 
 # center (and optionally scale)
 DT[, log_sl_c := (log_sl_ - mean(log_sl_, na.rm=TRUE))]
 DT[, cos_ta_c  := (cos_ta_  - mean(cos_ta_, na.rm=TRUE))]
 DT[, ldist_forest_end_c := (ldist_forest_end - mean(ldist_forest_end, na.rm=TRUE))]
 DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
-
+DT[, lsri_start_c := (lsri_startNN - mean(lsri_startNN, na.rm=TRUE))]
+DT[, lStartDist_c := (lStartDist - mean(lStartDist, na.rm=TRUE))]
 
 #Calving iSSA
 set.seed(123456)
@@ -86,42 +89,46 @@ C_10 <- glmmTMB(case_ ~
 
 # Basic covariates
 base_covs <-  c(
-  # 'I(log(sl_ + 1))',
-  # 'cos(ta_)',
+  'I(log(sl_ + 1))',
+  'cos(ta_)',
   '(1|step_id_)'
   )
 
 # Additional covariates to test if elk are more likely to end up farther from 
 # forest when they are closer to a herd mate
 prox_covs <- c(
-  'I(log(dist_to_forest_end + 0.125))',
-  'I(log(StartDist + 0.125))',
-  'I(log(StartDist + 0.125)):I(log(dist_to_forest_end + 0.125))',
-  '(I(log(StartDist + 0.125)) | ANIMAL_ID)',
-  '(I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)',
-  '(0 + I(log(StartDist + 0.125)):I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)'
+  'Cover_end',
+  'lStartDist_c',
+  'Cover_end:lStartDist_c',
+  # '(I(log(StartDist + 0.125)) | ANIMAL_ID)',
+  # '(ldist_forest_end_c | ANIMAL_ID)',
+  '(0 + lStartDist_c:Cover_end | ANIMAL_ID)'
 )
 
 # Additional covariates to test if elk are more likely to end up farther from
 # forest when they are closer to an individual with whom they share a higher SRI
+# Random slopes for distance to forest, but not sri, because this does
+# not vary within strata between used vs. available
 sri_covs <- c(
-  'I(log(dist_to_forest_end + 0.125))',
-  'I(log(sri_startNN + 0.125))',
-  'I(log(sri_startNN + 0.125)):I(log(dist_to_forest_end + 0.125))',
-  '(I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)',
-  '(I(log(sri_startNN + 0.125)) | ANIMAL_ID)',
-  '(0 + I(log(sri_startNN + 0.125)):I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)'
+  'ldist_forest_end_c',
+  'lsri_start_c',
+  'lsri_start_c:ldist_forest_end_c',
+  '(ldist_forest_end_c | ANIMAL_ID)',
+  # '(I(log(sri_startNN + 0.125)) | ANIMAL_ID)',
+  '(0 + lsri_start_c:ldist_forest_end_c | ANIMAL_ID)'
   )
 
 # Additional covariates to test if elk are more likely to end up farther from
 # forest when they are closer to a close relative
+# Random slopes for distance to forest, but not relatedness, because this does
+# not vary within strata between used vs. available
 wang_covs <- c(
-  'I(log(dist_to_forest_end + 0.125))',
-  'I(log(Wang_Start_NN + 0.125))',
-  'I(log(Wang_Start_NN + 0.125)):I(log(dist_to_forest_end + 0.125))',
-  '(I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)',
-  '(I(log(Wang_Start_NN + 0.125)) | ANIMAL_ID)',
-  '(0 + I(log(Wang_Start_NN + 0.125)):I(log(dist_to_forest_end + 0.125)) | ANIMAL_ID)'
+  'ldist_forest_end_c',
+  'Wang_Start_c',
+  'Wang_Start_c:ldist_forest_end_c',
+  '(ldist_forest_end_c | ANIMAL_ID)',
+  # '(Wang_Start_c | ANIMAL_ID)',
+  '(0 + Wang_Start_c:ldist_forest_end_c | ANIMAL_ID)'
 )
 
 # Fit temp model to figure out variance-covariance structure
@@ -154,6 +161,32 @@ fit_mod <- function(covs, nvar_parm, dat) {
   # Return the glmmTMB object
   return(model_fit)
 }
+
+### ISSF MODEL WITH DAY POINTS ONLY DISTANCE TO FOREST AS A PREDICTOR
+tod_dat <- read.csv('data/sunrise_sunset_2019.txt') %>%
+  rbind(read.csv('data/sunrise_sunset_2020.txt')) %>%
+  # Make column for string dates and day, year
+  mutate(Date = as.Date(Date, '%b%d%Y'),
+         # Make date columns for POSIX sunrise and sunset in EST
+         sunrise = lubridate::with_tz(paste(Date, `Sun.rise`, sep = ' '),
+                                      tzone = 'America/New_York'),
+         sunset = lubridate::with_tz(paste(Date, `Sun.set`, sep = ' '),
+                                     tzone = 'America/New_York'),
+         # Force into CST
+         sunrise = lubridate::force_tz(sunrise, tzone = 'Canada/Central'),
+         sunset = lubridate::with_tz(sunset, tzone = 'Canada/Central'),
+         # Add julian date and year
+         JDate = lubridate::yday(sunrise),
+         Year = as.factor(lubridate::year(Date))) %>%
+  dplyr::select(Year, JDate, sunrise, sunset)
+
+# Load and combine sample IDs and hormone levels
+DT_DAY_ONLY <- DT %>%
+  left_join(tod_dat) %>%
+  # Add column for day/night (if location is between sunrise and sunset)
+  mutate(TOD = ifelse(t2_ <= sunrise | t2_ > sunset, 'night', 'day'))%>%
+  #filter for day points only
+  filter(TOD == "day")
 
 # Fit models
 model_sri_day <- fit_mod(c(base_covs, sri_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
