@@ -97,6 +97,16 @@ base_covs <-  c(
 # Additional covariates to test if elk are more likely to end up farther from 
 # forest when they are closer to a herd mate
 prox_covs <- c(
+  'ldist_forest_end_c',
+  'lStartDist_c',
+  'ldist_forest_end_c:lStartDist_c',
+  # '(I(log(StartDist + 0.125)) | ANIMAL_ID)',
+  # '(ldist_forest_end_c | ANIMAL_ID)',
+  '(0 + lStartDist_c:ldist_forest_end_c | ANIMAL_ID)'
+)
+
+# Discrete variables
+prox_covs_d <- c(
   'Cover_end',
   'lStartDist_c',
   'Cover_end:lStartDist_c',
@@ -118,6 +128,16 @@ sri_covs <- c(
   '(0 + lsri_start_c:ldist_forest_end_c | ANIMAL_ID)'
   )
 
+# Discrete variables
+sri_covs_d <- c(
+  'Cover_end',
+  'lsri_start_c',
+  'lsri_start_c:Cover_end',
+  '(Cover_end | ANIMAL_ID)',
+  # '(I(log(sri_startNN + 0.125)) | ANIMAL_ID)',
+  '(0 + lsri_start_c:Cover_end | ANIMAL_ID)'
+)
+
 # Additional covariates to test if elk are more likely to end up farther from
 # forest when they are closer to a close relative
 # Random slopes for distance to forest, but not relatedness, because this does
@@ -131,9 +151,19 @@ wang_covs <- c(
   '(0 + Wang_Start_c:ldist_forest_end_c | ANIMAL_ID)'
 )
 
+# Discrete variables
+wang_covs_d <- c(
+  'Cover_end',
+  'Wang_Start_c',
+  'Wang_Start_c:Cover_end',
+  '(Cover_end | ANIMAL_ID)',
+  # '(Wang_Start_c | ANIMAL_ID)',
+  '(0 + Wang_Start_c:Cover_end | ANIMAL_ID)'
+)
+
 # Fit temp model to figure out variance-covariance structure
 tmp <- glmmTMB(
-  reformulate(c(base_covs, wang_covs), response = "case_"),
+  reformulate(c(base_covs, wang_covs_d), response = "case_"),
   family = poisson(),
   data = DT
 )
@@ -195,6 +225,9 @@ model_wang_day <- fit_mod(c(base_covs, wang_covs), nvar_parm = nvar_parm, DT_DAY
 model_sri <- fit_mod(c(base_covs, sri_covs), nvar_parm = nvar_parm, DT)
 model_prox <- fit_mod(c(base_covs, prox_covs), nvar_parm = nvar_parm, DT)
 model_wang <- fit_mod(c(base_covs, wang_covs), nvar_parm = nvar_parm, DT)
+model_sri_d <- fit_mod(c(base_covs, sri_covs_d), nvar_parm = nvar_parm, DT)
+model_prox_d <- fit_mod(c(base_covs, prox_covs_d), nvar_parm = nvar_parm, DT)
+model_wang_d <- fit_mod(c(base_covs, wang_covs_d), nvar_parm = nvar_parm, DT)
 
 summary(C_10)
 check_collinearity(C_10)
