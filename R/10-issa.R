@@ -234,7 +234,40 @@ n_thetas <- length(par_vec[grep("^theta", names(par_vec))])
 # Calculate nvar_parm
 nvar_parm = (n_thetas) - 1
 
-
+# Alternative
+fit_mod2 <- function(covs, nvar_parm, dat, fix_intercept_var = 1e5) {
+  
+  model_form <- suppressWarnings(
+    glmmTMB(
+      reformulate(covs, response='case_'),
+      family = poisson(),
+      map = list(theta = factor(c(NA, 1:nvar_parm))),
+      data = dat,
+      doFit = FALSE
+    )
+  )
+  
+  ## 1. Better starting values
+  model_form$parameters$beta[is.na(model_form$parameters$beta)] <- 0
+  
+  if (length(model_form$parameters$theta) > 1) {
+    model_form$parameters$theta[2:length(model_form$parameters$theta)] <- log(0.1)
+  }
+  
+  ## 2. Fix conditional-logit intercept variance
+  model_form$parameters$theta[1] <- log(fix_intercept_var)
+  
+  ## 3. Set optimizer properly for a doFit=FALSE object
+  model_form$control$optimizer <- optim
+  model_form$control$optArgs <- list(
+    method = "BFGS",
+    control = list(maxit = 20000, reltol = 1e-11)
+  )
+  
+  ## 4. Fit model
+  out <- glmmTMB:::fitTMB(model_form)
+  return(out)
+}
 
 # Function to fit models
 fit_mod <- function(covs, nvar_parm, dat) {
