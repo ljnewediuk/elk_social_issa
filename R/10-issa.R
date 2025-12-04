@@ -27,6 +27,8 @@ DT$Cover_end<- as.factor(DT$Cover_end)
 DT$Cover_start <- as.factor(DT$Cover_start)
 DT$Calving <- as.factor(DT$Calving)
 DT$IDYr <- as.factor(DT$IDYr)
+DT$Open_start <- ifelse(DT$Cover_start == 'Open', 1, 0)
+DT$Open_end <- ifelse(DT$Cover_end == 'Open', 1, 0)
 
 # Center, scale, and log
 # compute transformed vars once
@@ -98,7 +100,7 @@ C_10 <- glmmTMB(case_ ~
 base_covs <-  c(
   'I(log(sl_ + 1))',
   'cos(ta_)',
-  '(1|step_id_)'
+  '(1|elk_step_id_)'
   )
 
 # Additional covariates to test if elk are more likely to end up farther from 
@@ -114,12 +116,13 @@ prox_covs <- c(
 
 # Discrete variables
 prox_covs_d <- c(
-  'Cover_end',
+  'Open_end',
   'lStartDist_c',
-  'Cover_end:lStartDist_c',
+  'Open_end:lStartDist_c',
+  '(1 | ANIMAL_ID)',
   # '(I(log(StartDist + 0.125)) | ANIMAL_ID)',
   # '(ldist_forest_end_c | ANIMAL_ID)',
-  '(0 + lStartDist_c:Cover_end | ANIMAL_ID)'
+  '(0 + lStartDist_c:Open_end | ANIMAL_ID)'
 )
 
 # Starting in open habitat
@@ -127,16 +130,18 @@ prox_covs_s <- c(
   'ldist_forest_start_c',
   'lEndDist_c',
   'ldist_forest_start_c:lEndDist_c',
-  '(1 + lEndDist_c | ANIMAL_ID)',
+  '(1 | ANIMAL_ID)',
+  '(0 + lEndDist_c | ANIMAL_ID)',
   '(0 + lEndDist_c:ldist_forest_start_c | ANIMAL_ID)'
 )
 
-# Starting in open habitat (discrete)
+# Starting in open habitat (discrete) ***********
 prox_covs_s_d <- c(
-  'Cover_start',
+  'Open_start',
   'lEndDist_c',
-  'Cover_start:lEndDist_c',
-  '(0 + lEndDist_c:Cover_start | ANIMAL_ID)'
+  'Open_start:lEndDist_c',
+  '(1 | ANIMAL_ID)',
+  '(0 + lEndDist_c:Open_start | ANIMAL_ID)'
 )
 
 # Additional covariates to test if elk are more likely to end up farther from
@@ -154,12 +159,13 @@ sri_covs <- c(
 
 # Discrete variables
 sri_covs_d <- c(
-  'Cover_end',
+  'Open_end',
   'lsri_start_c',
-  'lsri_start_c:Cover_end',
-  '(Cover_end | ANIMAL_ID)',
+  'lsri_start_c:Open_end',
+  '(1 | ANIMAL_ID)',
+  # '(Open_end | ANIMAL_ID)',
   # '(I(log(sri_startNN + 0.125)) | ANIMAL_ID)',
-  '(0 + lsri_start_c:Cover_end | ANIMAL_ID)'
+  '(0 + lsri_start_c:Open_end | ANIMAL_ID)'
 )
 
 # Starting in open habitat
@@ -167,16 +173,18 @@ sri_covs_s <- c(
   'ldist_forest_start_c',
   'lsri_end_c',
   'ldist_forest_start_c:lsri_end_c',
-  '(1 + lsri_end_c | ANIMAL_ID)',
+  '(1 | ANIMAL_ID)',
+  '(0 + lsri_end_c | ANIMAL_ID)',
   '(0 + lsri_end_c:ldist_forest_start_c | ANIMAL_ID)'
 )
 
-# Starting in open habitat (discrete)
+# Starting in open habitat (discrete) *****************
 sri_covs_s_d <- c(
-  'Cover_start',
+  'Open_start',
   'lsri_end_c',
-  'Cover_start:lsri_end_c',
-  '(0 + lsri_end_c:Cover_start | ANIMAL_ID)'
+  'Open_start:lsri_end_c',
+  '(1 | ANIMAL_ID)',
+  '(0 + lsri_end_c:Open_start | ANIMAL_ID)'
 )
 
 # Additional covariates to test if elk are more likely to end up farther from
@@ -188,18 +196,19 @@ wang_covs <- c(
   'Wang_Start_c',
   'Wang_Start_c:ldist_forest_end_c',
   '(ldist_forest_end_c | ANIMAL_ID)',
-  # '(Wang_Start_c | ANIMAL_ID)',
+  '(Wang_Start_c | ANIMAL_ID)',
   '(0 + Wang_Start_c:ldist_forest_end_c | ANIMAL_ID)'
 )
 
-# Discrete variables
+# Discrete variables ******** USE THIS MODEL ********
 wang_covs_d <- c(
-  'Cover_end',
+  'Open_end',
   'Wang_Start_c',
-  'Wang_Start_c:Cover_end',
-  '(Cover_end | ANIMAL_ID)',
+  'Wang_Start_c:Open_end',
+  '(1 | ANIMAL_ID)',
+  # '(Open_end | ANIMAL_ID)',
   # '(Wang_Start_c | ANIMAL_ID)',
-  '(0 + Wang_Start_c:Cover_end | ANIMAL_ID)'
+  '(0 + Wang_Start_c:Open_end | ANIMAL_ID)'
 )
 
 # Starting in open habitat
@@ -207,22 +216,24 @@ wang_covs_s <- c(
   'ldist_forest_start_c',
   'Wang_End_c',
   'ldist_forest_start_c:Wang_End_c',
-  '(1 + Wang_End_c | ANIMAL_ID)',
-  '(0 + Wang_End_c:ldist_forest_start_c | ANIMAL_ID)'
+  '(1 | ANIMAL_ID)',
+  '(0 + Wang_End_c:ldist_forest_start_c | ANIMAL_ID)',
+  '(0 + Wang_End_c | ANIMAL_ID)'
 )
 
-# Starting in open habitat (discrete)
+# Starting in open habitat (discrete) *****************
 wang_covs_s_d <- c(
-  'Cover_start',
+  'Open_start',
   'Wang_End_c',
-  'Cover_start:Wang_End_c',
-  '(0 + Wang_End_c:Cover_start | ANIMAL_ID)'
+  'Open_start:Wang_End_c',
+  '(1 | ANIMAL_ID)',
+  '(0 + Wang_End_c:Open_start | ANIMAL_ID)'
 )
 
 
 # Fit temp model to figure out variance-covariance structure
 tmp <- glmmTMB(
-  reformulate(c(base_covs, prox_covs_s_d), response = "case_"),
+  reformulate(c(base_covs, wang_covs_s_d), response = "case_"),
   family = poisson(),
   data = DT
 )
@@ -234,41 +245,6 @@ n_thetas <- length(par_vec[grep("^theta", names(par_vec))])
 # Calculate nvar_parm
 nvar_parm = (n_thetas) - 1
 
-# Alternative
-fit_mod2 <- function(covs, nvar_parm, dat, fix_intercept_var = 1e5) {
-  
-  model_form <- suppressWarnings(
-    glmmTMB(
-      reformulate(covs, response='case_'),
-      family = poisson(),
-      map = list(theta = factor(c(NA, 1:nvar_parm))),
-      data = dat,
-      doFit = FALSE
-    )
-  )
-  
-  ## 1. Better starting values
-  model_form$parameters$beta[is.na(model_form$parameters$beta)] <- 0
-  
-  if (length(model_form$parameters$theta) > 1) {
-    model_form$parameters$theta[2:length(model_form$parameters$theta)] <- log(0.1)
-  }
-  
-  ## 2. Fix conditional-logit intercept variance
-  model_form$parameters$theta[1] <- log(fix_intercept_var)
-  
-  ## 3. Set optimizer properly for a doFit=FALSE object
-  model_form$control$optimizer <- optim
-  model_form$control$optArgs <- list(
-    method = "BFGS",
-    control = list(maxit = 20000, reltol = 1e-11)
-  )
-  
-  ## 4. Fit model
-  out <- glmmTMB:::fitTMB(model_form)
-  return(out)
-}
-
 # Function to fit models
 fit_mod <- function(covs, nvar_parm, dat) {
   # Set up model without fitting
@@ -278,12 +254,7 @@ fit_mod <- function(covs, nvar_parm, dat) {
             map = list(theta = factor(c(NA, 1:nvar_parm))),
             data = dat, doFit = F))
   # Set variance of random intercept to 10^6
-  model_form$parameters$theta[1] <- log(1e5)
-  # Apply BFGS optimizer
-  model_form$control <- glmmTMBControl(
-    optimizer = optim,
-    optArgs = list(method = 'BFGS', control = list(maxit = 20000, reltol = 1e-11))
-  )
+  model_form$parameters$theta[1] <- log(1e4)
   # Fit model using large fixed variance
   model_fit <- glmmTMB:::fitTMB(model_form)
   # Return the glmmTMB object
@@ -294,6 +265,9 @@ fit_mod <- function(covs, nvar_parm, dat) {
 model_sri_day <- fit_mod(c(base_covs, sri_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
 model_prox_day <- fit_mod(c(base_covs, prox_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
 model_wang_day <- fit_mod(c(base_covs, wang_covs), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_sri_day_d <- fit_mod(c(base_covs, sri_covs_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_prox_day_d <- fit_mod(c(base_covs, prox_covs_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_wang_day_d <- fit_mod(c(base_covs, wang_covs_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
 
 model_sri <- fit_mod(c(base_covs, sri_covs), nvar_parm = nvar_parm, DT)
 model_prox <- fit_mod(c(base_covs, prox_covs), nvar_parm = nvar_parm, DT)
@@ -309,9 +283,13 @@ model_sri_s_d <- fit_mod(c(base_covs, sri_covs_s_d), nvar_parm = nvar_parm, DT)
 model_prox_s_d <- fit_mod(c(base_covs, prox_covs_s_d), nvar_parm = nvar_parm, DT)
 model_wang_s_d <- fit_mod(c(base_covs, wang_covs_s_d), nvar_parm = nvar_parm, DT)
 
-model_sri_day <- fit_mod(c(base_covs, sri_covs_s_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
-model_prox_day <- fit_mod(c(base_covs, prox_covs_s_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
-model_wang_day <- fit_mod(c(base_covs, wang_covs_s_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_sri_s_day_d <- fit_mod(c(base_covs, sri_covs_s_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_prox_s_day_d <- fit_mod(c(base_covs, prox_covs_s_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_wang_s_day_d <- fit_mod(c(base_covs, wang_covs_s_d), nvar_parm = nvar_parm, DT_DAY_ONLY)
+
+model_sri_s_day <- fit_mod(c(base_covs, sri_covs_s), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_prox_s_day <- fit_mod(c(base_covs, prox_covs_s), nvar_parm = nvar_parm, DT_DAY_ONLY)
+model_wang_s_day <- fit_mod(c(base_covs, wang_covs_s), nvar_parm = nvar_parm, DT_DAY_ONLY)
 
 summary(C_10)
 check_collinearity(C_10)
