@@ -12,6 +12,7 @@
 
 # Large files
 /output
+/models
 
 # Example code in package build process
 *-Ex.R
