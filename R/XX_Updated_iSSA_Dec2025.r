@@ -78,7 +78,7 @@ prox_covs_d <- c(
 
 # Fit temp model to figure out variance-covariance structure
 tmp <- glmmTMB(
-  reformulate(c(base_covs, wang_covs_s_d), response = "case_"),
+  reformulate(c(base_covs, wang_covs_d), response = "case_"),
   family = poisson(),
   data = DT
 )
@@ -110,4 +110,9 @@ fit_mod <- function(covs, nvar_parm, dat) {
 model_sri_d <- fit_mod(c(base_covs, sri_covs_d), nvar_parm = nvar_parm, DT)
 model_prox_d <- fit_mod(c(base_covs, prox_covs_d), nvar_parm = nvar_parm, DT)
 model_wang_d <- fit_mod(c(base_covs, wang_covs_d), nvar_parm = nvar_parm, DT)
+
+# Save the models for RSS
+saveRDS(model_sri_d, 'models/issa_sri.rds')
+saveRDS(model_prox_d, 'models/issa_prox.rds')
+saveRDS(model_prox_d, 'models/issa_wang.rds')
 
