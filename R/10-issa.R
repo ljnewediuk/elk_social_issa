@@ -54,45 +54,45 @@ DT[, lsri_end_c := (lsri_endNN - mean(lsri_endNN, na.rm=TRUE))]
 DT[, lStartDist_c := (lStartDist - mean(lStartDist, na.rm=TRUE))]
 DT[, lEndDist_c := (lEndDist - mean(lEndDist, na.rm=TRUE))]
 
-#Calving iSSA
-set.seed(123456)
-C_10 <- glmmTMB(case_ ~ 
-                   ## step length
-                   I(log(sl_+1)) + 
-                   # I(log(sl_+1)):Calving +
-                   # I(log(sl_+1)):I(log(StartDist + 1))+
-                   I(log(sl_+1)):I(log(sri_startNN+0.125))+
-                   # I(log(sl_+1)):Wang_Start_NN+
-                   
-                   #Timing variables
-                   Year+
-                   
-                   ## social variables in interactions with movement and habitat 
-                   # I(log(EndDist + 1)) + 
-                   # I(log(EndDist + 1)):Calving + 
-                   I(log(sri_EndNN+0.125)) +
-                   #  I(log(sri_EndNN+0.125)):Calving +
-                   # Wang_End_NN +
-                   # Wang_End_NN: Calving +
-                   
-                   ## random effects  
-                   (1|elk_step_id_) + 
-                   (0 + I(log(sl_+1))| ANIMAL_ID) + 
-                   # (0 + I(log(sl_+1)):Calving | ANIMAL_ID) +
-                   #  (0 + I(log(sl_+1)):I(log(StartDist + 1)) | ANIMAL_ID) +
-                    (0 + I(log(sl_+1)):I(log(sri_startNN+0.125)) | ANIMAL_ID) +
-                  #  (0 + I(log(sl_+1)):Wang_Start_NN | ANIMAL_ID) +
-                  #  (0 + I(log(EndDist + 1)) | ANIMAL_ID)+
-                  #  (0 +  I(log(EndDist + 1)):Calving| ANIMAL_ID)+
-                  #  (0 + I(log(sri_EndNN+0.125)) | ANIMAL_ID)+
-                  #  (0 + I(log(sri_EndNN+0.125)):Calving| ANIMAL_ID) +
-                  #  (0 + Wang_End_NN | ANIMAL_ID)+
-                  # (0 + Wang_End_NN: Calving| ANIMAL_ID),
-                 
-                 family=poisson(), 
-                 data = DT,  
-                 map = list(theta=factor(c(NA,1:2))), 
-                 start = list(theta=c(log(1000), seq(0,0, length.out = 3))))
+# #Calving iSSA
+# set.seed(123456)
+# C_10 <- glmmTMB(case_ ~ 
+#                    ## step length
+#                    I(log(sl_+1)) + 
+#                    # I(log(sl_+1)):Calving +
+#                    # I(log(sl_+1)):I(log(StartDist + 1))+
+#                    I(log(sl_+1)):I(log(sri_startNN+0.125))+
+#                    # I(log(sl_+1)):Wang_Start_NN+
+#                    
+#                    #Timing variables
+#                    Year+
+#                    
+#                    ## social variables in interactions with movement and habitat 
+#                    # I(log(EndDist + 1)) + 
+#                    # I(log(EndDist + 1)):Calving + 
+#                    I(log(sri_EndNN+0.125)) +
+#                    #  I(log(sri_EndNN+0.125)):Calving +
+#                    # Wang_End_NN +
+#                    # Wang_End_NN: Calving +
+#                    
+#                    ## random effects  
+#                    (1|elk_step_id_) + 
+#                    (0 + I(log(sl_+1))| ANIMAL_ID) + 
+#                    # (0 + I(log(sl_+1)):Calving | ANIMAL_ID) +
+#                    #  (0 + I(log(sl_+1)):I(log(StartDist + 1)) | ANIMAL_ID) +
+#                     (0 + I(log(sl_+1)):I(log(sri_startNN+0.125)) | ANIMAL_ID) +
+#                   #  (0 + I(log(sl_+1)):Wang_Start_NN | ANIMAL_ID) +
+#                   #  (0 + I(log(EndDist + 1)) | ANIMAL_ID)+
+#                   #  (0 +  I(log(EndDist + 1)):Calving| ANIMAL_ID)+
+#                   #  (0 + I(log(sri_EndNN+0.125)) | ANIMAL_ID)+
+#                   #  (0 + I(log(sri_EndNN+0.125)):Calving| ANIMAL_ID) +
+#                   #  (0 + Wang_End_NN | ANIMAL_ID)+
+#                   # (0 + Wang_End_NN: Calving| ANIMAL_ID),
+#                  
+#                  family=poisson(), 
+#                  data = DT,  
+#                  map = list(theta=factor(c(NA,1:2))), 
+#                  start = list(theta=c(log(1000), seq(0,0, length.out = 3))))
 
 # Model covariates
 
@@ -119,10 +119,11 @@ prox_covs_d <- c(
   'Open_end',
   'lStartDist_c',
   'Open_end:lStartDist_c',
-  '(1 | ANIMAL_ID)',
+  '(1 | IDYr)',
+  '(0 + Open_end | IDYr)',
   # '(I(log(StartDist + 0.125)) | ANIMAL_ID)',
   # '(ldist_forest_end_c | ANIMAL_ID)',
-  '(0 + lStartDist_c:Open_end | ANIMAL_ID)'
+  '(0 + lStartDist_c:Open_end | IDYr)'
 )
 
 # Starting in open habitat
@@ -140,8 +141,9 @@ prox_covs_s_d <- c(
   'Open_start',
   'lEndDist_c',
   'Open_start:lEndDist_c',
-  '(1 | ANIMAL_ID)',
-  '(0 + lEndDist_c:Open_start | ANIMAL_ID)'
+  '(1 | IDYr)',
+  '(0 + Open_start | IDYr)',
+  '(0 + lEndDist_c:Open_start | IDYr)'
 )
 
 # Additional covariates to test if elk are more likely to end up farther from
@@ -162,10 +164,11 @@ sri_covs_d <- c(
   'Open_end',
   'lsri_start_c',
   'lsri_start_c:Open_end',
-  '(1 | ANIMAL_ID)',
+  '(1 | IDYr)',
+  '(0 + Open_end | IDYr)',
   # '(Open_end | ANIMAL_ID)',
   # '(I(log(sri_startNN + 0.125)) | ANIMAL_ID)',
-  '(0 + lsri_start_c:Open_end | ANIMAL_ID)'
+  '(0 + lsri_start_c:Open_end | IDYr)'
 )
 
 # Starting in open habitat
@@ -173,9 +176,9 @@ sri_covs_s <- c(
   'ldist_forest_start_c',
   'lsri_end_c',
   'ldist_forest_start_c:lsri_end_c',
-  '(1 | ANIMAL_ID)',
-  '(0 + lsri_end_c | ANIMAL_ID)',
-  '(0 + lsri_end_c:ldist_forest_start_c | ANIMAL_ID)'
+  '(1 | IDYr)',
+  '(0 + lsri_end_c | IDYr)',
+  '(0 + lsri_end_c:ldist_forest_start_c | IDYr)'
 )
 
 # Starting in open habitat (discrete) *****************
@@ -183,8 +186,9 @@ sri_covs_s_d <- c(
   'Open_start',
   'lsri_end_c',
   'Open_start:lsri_end_c',
-  '(1 | ANIMAL_ID)',
-  '(0 + lsri_end_c:Open_start | ANIMAL_ID)'
+  '(1 | IDYr)',
+  '(0 + Open_start | IDYr)',
+  '(0 + lsri_end_c:Open_start | IDYr)'
 )
 
 # Additional covariates to test if elk are more likely to end up farther from
@@ -205,10 +209,11 @@ wang_covs_d <- c(
   'Open_end',
   'Wang_Start_c',
   'Wang_Start_c:Open_end',
-  '(1 | ANIMAL_ID)',
+  '(1 | IDYr)',
+  '(0 + Open_end | IDYr)',
   # '(Open_end | ANIMAL_ID)',
   # '(Wang_Start_c | ANIMAL_ID)',
-  '(0 + Wang_Start_c:Open_end | ANIMAL_ID)'
+  '(0 + Wang_Start_c:Open_end | IDYr)'
 )
 
 # Starting in open habitat
@@ -226,14 +231,15 @@ wang_covs_s_d <- c(
   'Open_start',
   'Wang_End_c',
   'Open_start:Wang_End_c',
-  '(1 | ANIMAL_ID)',
-  '(0 + Wang_End_c:Open_start | ANIMAL_ID)'
+  '(1 | IDYr)',
+  '(0 + Open_start | IDYr)',
+  '(0 + Wang_End_c:Open_start | IDYr)'
 )
 
 
 # Fit temp model to figure out variance-covariance structure
 tmp <- glmmTMB(
-  reformulate(c(base_covs, wang_covs_s_d), response = "case_"),
+  reformulate(c(base_covs, prox_covs_s_d), response = "case_"),
   family = poisson(),
   data = DT
 )
