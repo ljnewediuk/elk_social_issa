@@ -7,42 +7,99 @@ libs <- c('data.table', 'dplyr', 'amt', 'lubridate', 'tidyr', 'ggplot2', 'glmmTM
 lapply(libs, require, character.only = TRUE)
 
 # Load data
-DT <- readRDS("output/location-data/5-rdm-locs-sri-NN-N20.RDS")
-issa <- readRDS("output/issa models/SRI_issa_20.RDS")
+DT <- readRDS("output/ZOE/5-rdm-locs-sri-NN-N10.RDS")
+issa <- readRDS("models/issa_wang.rds")
 
 DT[, .N, by = c("IDYr")]
 
 DT$Use[DT$case_ == "TRUE"] <- 1
 DT$Use[DT$case_ == "FALSE"] <- 0
 
+# Center, scale, and log
+# compute transformed vars once
+DT[, log_sl_ := log(sl_ + 1e-6)]
+DT[, cos_ta_ := cos(ta_)]
+
+DT[, lsri_startNN := log(sri_startNN + 0.125)]
+DT[, lStartDist := log(StartDist + 0.125)]
+DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
+
+DT$Open_end <- ifelse(DT$Cover_end == 'Open', 1, 0)
+
 ## number of groups
 length(unique(DT[iter == 1]$groupEnd))
 
 #### RSS functions ####
-### POP ###
-p.pop <- function(DT, mod, habvar, habvalue, socvar, socvalue){
-  #unique(
-  DT[
-    ,.(hab = predict(
+#### ADJUST THIS SO WE HAVE TWO START DISTANCES
+
+p.pop <- function(dat, mod, hab){
+  
+  nd <- tibble(
+    sl_ = mean(dat$sl_, na.rm = T),
+    ta_ = mean(dat$ta_, na.rm = T),
+    Open_end = hab,
+    Open_start = hab,
+    lsri_start_c = seq(min(dat$lsri_start_c), max(dat$lsri_start_c), length.out = 100),
+    lsri_startNN = seq(min(dat$lsri_startNN), max(dat$lsri_startNN), length.out = 100),
+    Wang_Start_c = seq(min(dat$Wang_Start_c), max(dat$Wang_Start_c), length.out = 100),
+    lStartDist = seq(min(dat$lStartDist), max(dat$lStartDist), length.out = 100),
+    lEndDist_c = seq(min(dat$lEndDist_c), max(dat$lEndDist_c), length.out = 100),
+    elk_step_id_ = NA
+  )
+  
+  return(
+    predict(
       mod,
-      newdata = .SD[, .(
-        sl_ = mean(sl_),
-        ta_ = mean(ta_),
-        propOpenMove = ifelse(habvar == 'open', habvalue, mean(propOpenMove, na.rm = T)),
-        propLichen = ifelse(habvar == 'lichen', habvalue, mean(propLichen, na.rm = T)),
-        propForest = ifelse(habvar == 'forest', habvalue, mean(propForest, na.rm = T)),
-        StartDist = ifelse(socvar == 'StartDist', socvalue, mean(StartDist, na.rm = T)),  
-        sri = ifelse(socvar == 'sri', seq(0, 1, length.out = 100), mean(sri, na.rm = T)),
-        EndDist = ifelse(socvar == 'EndDist', 1:500, mean(EndDist, na.rm = T)),
-        caribou_step_id_ = NA,
-        IDYr = NA
-      )],
+      newdata = nd,
       type = "link",
-      re.form = NA
-    ), 
-    habvar, habvalue, socvar, socvalue)]
-  # )
+      re.form = NA,
+      se.fit = F
+    )
+  )
+  
 }
+
+predopen <- p.pop(dat = DT, mod = issa, hab = 1)
+predclosed <- p.pop(dat = DT, mod = issa, hab = 0)
+
+logRSS = predopen - predclosed
+
+plot(x = seq(min(dat$lsri_startNN), max(dat$lsri_startNN), length.out = 100), y = logRSS, type = 'l')
+
+#### Log-RSS individuals
+p.id <- function(dat, mod, hab, id){
+  
+  nd <- tibble(
+    sl_ = mean(dat$sl_, na.rm = T),
+    ta_ = mean(dat$ta_, na.rm = T),
+    Open_end = hab,
+    Open_start = hab,
+    lsri_startNN = seq(min(dat$lsri_startNN), max(dat$lsri_startNN), length.out = 100),
+    lsri_start_c = seq(min(dat$lsri_start_c), max(dat$lsri_start_c), length.out = 100),
+    Wang_Start_c = seq(min(dat$Wang_Start_c), max(dat$Wang_Start_c), length.out = 100),
+    lStartDist = seq(min(dat$lStartDist), max(dat$lStartDist), length.out = 100),
+    lEndDist_c = seq(min(dat$lEndDist_c), max(dat$lEndDist_c), length.out = 100),
+    elk_step_id_ = NA,
+    IDYr = id
+  )
+  
+  return(
+    predict(
+      mod,
+      newdata = nd,
+      type = "link",
+      re.form = NULL
+    )
+  )
+  
+}
+
+predclosedid <- p.id(dat = DT, mod = issa, hab = 0, id = 'ER_E_24_2019')
+predopenid <- p.id(dat = DT, mod = issa, hab = 1, id = 'ER_E_24_2019')
+
+logRSSid <- predopenid - predclosedid
+
+lines(x = seq(min(dat$lEndDist_c), max(dat$lEndDist_c), length.out = 100), y = logRSSid, col = 'red')
 
 ### INDIVS ###
 p.indiv <- function(ids, DT, mod, habvar, habvalue, socvar, socvalue){
