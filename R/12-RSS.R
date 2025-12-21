@@ -44,7 +44,8 @@ p.pop <- function(dat, mod, hab){
     Wang_Start_c = seq(min(dat$Wang_Start_c), max(dat$Wang_Start_c), length.out = 100),
     lStartDist = seq(min(dat$lStartDist), max(dat$lStartDist), length.out = 100),
     lEndDist_c = seq(min(dat$lEndDist_c), max(dat$lEndDist_c), length.out = 100),
-    elk_step_id_ = NA
+    elk_step_id_ = NA,
+    ANIMAL_ID = NA
   )
   
   return(
@@ -53,7 +54,7 @@ p.pop <- function(dat, mod, hab){
       newdata = nd,
       type = "link",
       re.form = NA,
-      se.fit = F
+      se.fit = T
     )
   )
   
@@ -62,9 +63,15 @@ p.pop <- function(dat, mod, hab){
 predopen <- p.pop(dat = DT, mod = issa, hab = 1)
 predclosed <- p.pop(dat = DT, mod = issa, hab = 0)
 
-logRSS = predopen - predclosed
+# Subtract the open vs closed (RSS difference)
+logRSS = exp(predopen[[1]] - predclosed[[1]])
 
-plot(x = seq(min(dat$lsri_startNN), max(dat$lsri_startNN), length.out = 100), y = logRSS, type = 'l')
+# Or calculate the ratio
+RSSratio = predopen[[1]]/predclosed[[1]]
+
+
+# Elk generally avoid open habitat relative to closed habitat, but they are less likely to avoid it when they are near an elk to which they are closely related
+plot(x = seq(min(DT$Wang_Start_c), max(DT$Wang_Start_c), length.out = 100), y = exp(logRSS), type = 'l')
 
 #### Log-RSS individuals
 p.id <- function(dat, mod, hab, id){
@@ -80,7 +87,7 @@ p.id <- function(dat, mod, hab, id){
     lStartDist = seq(min(dat$lStartDist), max(dat$lStartDist), length.out = 100),
     lEndDist_c = seq(min(dat$lEndDist_c), max(dat$lEndDist_c), length.out = 100),
     elk_step_id_ = NA,
-    IDYr = id
+    ANIMAL_ID = id
   )
   
   return(
@@ -94,12 +101,26 @@ p.id <- function(dat, mod, hab, id){
   
 }
 
-predclosedid <- p.id(dat = DT, mod = issa, hab = 0, id = 'ER_E_24_2019')
-predopenid <- p.id(dat = DT, mod = issa, hab = 1, id = 'ER_E_24_2019')
+predclosedid <- lapply(unique(DT$ANIMAL_ID), function(X) p.id(dat = DT, mod = issa, hab = 0, id = X))
+predopenid <- lapply(unique(DT$ANIMAL_ID), function(X) p.id(dat = DT, mod = issa, hab = 1, id = X))
 
-logRSSid <- predopenid - predclosedid
+logRSSid <- data.frame(RSSdiff = unlist(Map(`-`, predopenid, predclosedid)),
+  ANIMAL_ID = rep(unique(DT$ANIMAL_ID), each = 100),
+  Relatedness = rep(seq(min(DT$Wang_Start_c), max(DT$Wang_Start_c), length.out = 100), times = 18)) %>%
+  mutate(logRSS = exp(RSSdiff))
 
-lines(x = seq(min(dat$lEndDist_c), max(dat$lEndDist_c), length.out = 100), y = logRSSid, col = 'red')
+lines(x = seq(min(DT$lEndDist_c), max(DT$lEndDist_c), length.out = 100), y = logRSSid, col = 'red')
+
+logRSSpop <- data.frame(Relatedness = seq(min(DT$Wang_Start_c), 
+                                         max(DT$Wang_Start_c), 
+                                         length.out = 100), logRSS)
+
+ggplot() +
+  geom_line(data = logRSSid, aes(x = Relatedness, y = logRSS, group = ANIMAL_ID), colour = 'blue', linewidth = 0.25) +
+  geom_line(data = logRSSpop, aes(x = Relatedness, y = logRSS), linewidth = 1.5, colour = 'black')
+
+saveRDS(logRSSpop, 'rss/rss_pop_wang.rds')
+saveRDS(logRSSid, 'rss/rss_id_wang.rds')
 
 ### INDIVS ###
 p.indiv <- function(ids, DT, mod, habvar, habvalue, socvar, socvalue){
