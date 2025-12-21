@@ -5,7 +5,7 @@
 ## 1- Prep workspace ====
 
 # Load libraries
-libs <- c('data.table', 'amt', 'tidyverse', 'glmmTMB')
+libs <- c('data.table', 'tidyverse', 'glmmTMB')
 lapply(libs, require, character.only = TRUE)
 
 # Load data
@@ -49,6 +49,9 @@ DT[, lStartDist_c := (lStartDist - mean(lStartDist, na.rm=TRUE))]
 
 # Relatedness of nearest neighbour at start of step (centre only)
 DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
+
+# Save the model data for RSS
+saveRDS(DT, 'output/cleaned_model_data.rds')
 
 ## 3- Define model covariates ====
 
