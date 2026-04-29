@@ -28,7 +28,7 @@ p.pop <- function(dat, mod, hab) {
     Open_end = hab,
     lsri_start_c = seq(min(dat$lsri_start_c), max(dat$lsri_start_c), length.out = 100),
     Wang_Start_c = seq(min(dat$Wang_Start_c), max(dat$Wang_Start_c), length.out = 100),
-    lStartDist = seq(min(dat$lStartDist), max(dat$lStartDist), length.out = 100),
+    lStartDist = seq(-7, 1.5, length.out = 100),
     elk_step_id_ = NA,
     ANIMAL_ID = NA
   )
@@ -51,7 +51,7 @@ p.id <- function(dat, mod, hab, id) {
     Open_end = hab,
     lsri_start_c = seq(min(dat$lsri_start_c), max(dat$lsri_start_c), length.out = 100),
     Wang_Start_c = seq(min(dat$Wang_Start_c), max(dat$Wang_Start_c), length.out = 100),
-    lEndDist_c = seq(min(dat$lEndDist_c), max(dat$lEndDist_c), length.out = 100),
+    lStartDist = seq(-7, 1.5, length.out = 100),
     elk_step_id_ = NA,
     ANIMAL_ID = id
   )
@@ -112,7 +112,7 @@ RSS.tables <- function(m) {
     logRSSpop <- dplyr::rename(logRSSpop, Relatedness = Soc_Var)
     logRSSid <- dplyr::rename(logRSSid, Relatedness = Soc_Var)
   }
-  if(colnames(issa[["frame"]])[6] == 'lStartDist_c') {
+  if(colnames(issa[["frame"]])[6] == 'lStartDist') {
     logRSSpop <- dplyr::rename(logRSSpop, NN_Distance = Soc_Var)
     logRSSid <- dplyr::rename(logRSSid, NN_Distance = Soc_Var)
   }
