@@ -134,3 +134,7 @@ saveRDS(model_sri_d, 'models/issa_sri.rds')
 saveRDS(model_prox_d, 'models/issa_prox.rds')
 saveRDS(model_wang_d, 'models/issa_wang.rds')
 
+# Save model tables
+saveRDS(broom.mixed::tidy(model_sri_d), "models/table_sri_model.rds")
+saveRDS(broom.mixed::tidy(model_wang_d), "models/table_wang_model.rds")
+saveRDS(broom.mixed::tidy(model_prox_d), "models/table_sri_model.rds")
