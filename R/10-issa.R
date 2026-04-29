@@ -66,10 +66,10 @@ base_covs <-  c(
 # starting their step closer to any other elk?)
 prox_covs_d <- c(
   'Open_end',
-  'lStartDist_c',
-  'Open_end:lStartDist_c',
+  'lStartDist',
+  'Open_end:lStartDist',
   '(1 | ANIMAL_ID)',
-  '(0 + lStartDist_c:Open_end | ANIMAL_ID)'
+  '(0 + lStartDist:Open_end | ANIMAL_ID)'
 )
 
 # SRI hypothesis (do elk select more for open habitat when starting their step
