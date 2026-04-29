@@ -34,11 +34,11 @@ rss_id_wang$id$Relatedness_unsc <- rss_id_wang$id$Relatedness + mu_wang
 rss_id_sri$id$Soc_Var_unsc <- exp(rss_id_sri$id$Soc_Var + mu_sri) - 0.125
 rss_pop_sri$pop$Soc_Var_unsc <- exp(rss_pop_sri$pop$Soc_Var + mu_sri) - 0.125
 
-## 3- Plot the RSS ====
+## 3- Plot the RSS (presentations) ====
 
 # Nearest neighbour distance
 # Log RSS for open habitat versus closed
-ggplot() +
+NN_plot <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "#CFE3D8") +
   geom_line(data = rss_id_NNdist$id, 
             aes(x = NN_Distance_unsc, y = logRSS, group = ANIMAL_ID),
@@ -47,8 +47,8 @@ ggplot() +
             aes(x = NN_Distance_unsc, y = logRSS),
             linewidth = 1, colour = '#F2C14E') +
   scale_x_continuous(breaks = c(100, 900), labels = c("50 metres", "1 kilometer"), limits = c(0, 1000)) +
-  theme(plot.background = element_rect(colour = '#3D594B', fill = '#3D594B'),,
-        panel.background = element_rect(colour = '#3D594B', fill = '#3D594B'),
+  theme(plot.background = element_rect(colour = '#345a49', fill = '#345a49'),,
+        panel.background = element_rect(colour = '#345a49', fill = '#345a49'),
         panel.grid = element_blank(),
         plot.margin = unit(c(0.25, 0.25, 1, 1), 'cm'),
         axis.text = element_text(size = 18, colour = '#CFE3D8'),
@@ -61,7 +61,7 @@ ggplot() +
 
 # Relatedness
 # Log RSS for open habitat versus closed
-ggplot() +
+Wang_plot <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "#CFE3D8") +
   geom_line(data = rss_id_wang$id, 
             aes(x = Relatedness_unsc, y = logRSS, group = ANIMAL_ID),
@@ -70,8 +70,8 @@ ggplot() +
             aes(x = Relatedness_unsc, y = logRSS),
             linewidth = 1, colour = '#F2C14E') +
   scale_x_continuous(breaks = c(0.05, 0.45), labels = c("unrelated", "full siblings"), limits = c(0, 0.5)) +
-  theme(plot.background = element_rect(colour = '#3D594B', fill = '#3D594B'),,
-        panel.background = element_rect(colour = '#3D594B', fill = '#3D594B'),
+  theme(plot.background = element_rect(colour = '#345a49', fill = '#345a49'),,
+        panel.background = element_rect(colour = '#345a49', fill = '#345a49'),
         panel.grid = element_blank(),
         plot.margin = unit(c(0.25, 0.25, 1, 1), 'cm'),
         axis.text = element_text(size = 18, colour = '#CFE3D8'),
@@ -85,7 +85,7 @@ ggplot() +
 
 # SRI
 # Log RSS for open habitat versus closed
-ggplot() +
+SRI_plot <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "#CFE3D8") +
   geom_line(data = rss_id_sri$id, 
             aes(x = Soc_Var_unsc, y = logRSS, group = ANIMAL_ID),
@@ -94,8 +94,8 @@ ggplot() +
             aes(x = Soc_Var_unsc, y = logRSS),
             linewidth = 1, colour = '#F2C14E') +
   scale_x_continuous(breaks = c(0.05, 0.25), labels = c("low familiarity", "high familiarity"), limits = c(0, 0.3)) +
-  theme(plot.background = element_rect(colour = '#3D594B', fill = '#3D594B'),,
-        panel.background = element_rect(colour = '#3D594B', fill = '#3D594B'),
+  theme(plot.background = element_rect(colour = '#345a49', fill = '#345a49'),,
+        panel.background = element_rect(colour = '#345a49', fill = '#345a49'),
         panel.grid = element_blank(),
         plot.margin = unit(c(0.25, 0.25, 1, 1), 'cm'),
         axis.text = element_text(size = 18, colour = '#CFE3D8'),
@@ -109,4 +109,7 @@ ggplot() +
 
 ## 4- Write plots ====
 
+ggsave("plots/presentation_NN_plot.pdf", NN_plot, device = "pdf", width = 6, height = 5, units = "in", dpi = 400)
+ggsave("plots/presentation_Wang_plot.pdf", Wang_plot, device = "pdf", width = 6, height = 5, units = "in", dpi = 400)
+ggsave("plots/presentation_SRI_plot.pdf", SRI_plot, device = "pdf", width = 6, height = 5, units = "in", dpi = 400)
 
