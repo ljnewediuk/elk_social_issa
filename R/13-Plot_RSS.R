@@ -160,8 +160,7 @@ Wang_plot_MS <- ggplot() +
         axis.line = element_line(colour = 'black', linewidth = 1),
         axis.title.x = element_text(size = 15, colour = 'black', vjust = -5),
         axis.title.y = element_text(size = 15, colour = 'black', vjust = 5)) +
-  labs(x = 'Relatedness index', y = 'Relative selection strength for open habitat') +
-  ylim(0, 1.5)
+  labs(x = 'Relatedness index', y = 'Relative selection strength for open habitat') 
 
 # SRI
 # Log RSS for open habitat versus closed
@@ -173,7 +172,6 @@ SRI_plot_MS <- ggplot() +
   geom_line(data = rss_pop_sri$pop, 
             aes(x = Soc_Var_unsc, y = logRSS),
             linewidth = 1, colour = '#1F4E79') +
-  # scale_x_continuous(breaks = c(0.05, 0.25), limits = c(0, 0.3)) +
   theme(plot.background = element_rect(colour = 'white', fill = 'white'),,
         panel.background = element_rect(colour = 'white', fill = 'white'),
         panel.grid = element_blank(),
@@ -184,8 +182,7 @@ SRI_plot_MS <- ggplot() +
         axis.line = element_line(colour = 'black', linewidth = 1),
         axis.title.x = element_text(size = 15, colour = 'black', vjust = -5),
         axis.title.y = element_text(size = 15, colour = 'black', vjust = 5)) +
-  labs(x = 'Simple ratio index', y = 'Relative selection strength for open habitat') +
-  ylim(0, 40)
+  labs(x = 'Simple ratio index', y = 'Relative selection strength for open habitat')
 
 ## 4- Write plots ====
 
