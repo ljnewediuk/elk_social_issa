@@ -11,6 +11,10 @@ lapply(libs, require, character.only = TRUE)
 # Load data
 DT <- readRDS("output/ZOE/5-rdm-locs-sri-NN-N10.RDS")
 
+# Optionally load corrected data and set as data.table
+# DT <- readRDS("output/corrected_iSSA_data.rds")
+# setDT(DT)
+
 ## 2- Prep data for models ====
 
 # Convert used vs. available to 1 and 0
@@ -49,6 +53,9 @@ DT[, lStartDist_c := (lStartDist - mean(lStartDist, na.rm=TRUE))]
 
 # Relatedness of nearest neighbour at start of step (centre only)
 DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
+
+# Corrected
+# DT[, Wang_Start_c := (Wang_Start_NN_corrected - mean(Wang_Start_NN_corrected, na.rm=TRUE))]
 
 # Save the model data for RSS
 saveRDS(DT, 'output/cleaned_model_data.rds')
