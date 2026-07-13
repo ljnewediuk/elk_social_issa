@@ -127,18 +127,18 @@ NN_plot_MS <- ggplot() +
   geom_line(data = rss_pop_NNdist$pop, 
             aes(x = NN_Distance_unsc, y = logRSS),
             linewidth = 1, colour = '#1F4E79') +
-  scale_x_continuous(breaks = c(1000, 5000, 10000), limits = c(0, 10100)) +
+  scale_x_continuous(breaks = c(1000, 5000, 10000), labels = c(1, 5, 10), limits = c(0, 10100)) +
   theme(plot.background = element_rect(colour = 'white', fill = 'white'),,
         panel.background = element_rect(colour = 'white', fill = 'white'),
         panel.grid = element_blank(),
         plot.margin = unit(c(0.25, 0.25, 1, 1), 'cm'),
-        axis.text = element_text(size = 15, colour = 'black'),
-        legend.text = element_text(size = 15, colour = 'black'),
-        legend.title = element_text(size = 15, colour = 'black'),
+        axis.text = element_text(size = 13, colour = 'black'),
+        legend.text = element_text(size = 13, colour = 'black'),
+        legend.title = element_text(size = 13, colour = 'black'),
         axis.line = element_line(colour = 'black', linewidth = 1),
-        axis.title.x = element_text(size = 15, colour = 'black', vjust = -5),
-        axis.title.y = element_text(size = 15, colour = 'black', vjust = 5)) +
-  labs(x = 'Distance to nearest neighbour (m)', y = 'Relative selection strength for open habitat')
+        axis.title.x = element_text(size = 13, colour = 'black', vjust = -5),
+        axis.title.y = element_text(size = 13, colour = 'black', vjust = 5)) +
+  labs(x = 'Distance to nearest neighbour (km)', y = 'Log RSS for open habitat')
 
 # Relatedness
 # Log RSS for open habitat versus closed
@@ -154,13 +154,13 @@ Wang_plot_MS <- ggplot() +
         panel.background = element_rect(colour = 'white', fill = 'white'),
         panel.grid = element_blank(),
         plot.margin = unit(c(0.25, 0.25, 1, 1), 'cm'),
-        axis.text = element_text(size = 15, colour = 'black'),
-        legend.text = element_text(size = 15, colour = 'black'),
-        legend.title = element_text(size = 15, colour = 'black'),
+        axis.text = element_text(size = 13, colour = 'black'),
+        legend.text = element_text(size = 13, colour = 'black'),
+        legend.title = element_text(size = 13, colour = 'black'),
         axis.line = element_line(colour = 'black', linewidth = 1),
-        axis.title.x = element_text(size = 15, colour = 'black', vjust = -5),
-        axis.title.y = element_text(size = 15, colour = 'black', vjust = 5)) +
-  labs(x = 'Relatedness index', y = 'Relative selection strength for open habitat') 
+        axis.title.x = element_text(size = 13, colour = 'black', vjust = -5),
+        axis.title.y = element_text(size = 13, colour = 'black', vjust = 5)) +
+  labs(x = 'Relatedness index', y = 'Log RSS for open habitat') 
 
 # SRI
 # Log RSS for open habitat versus closed
@@ -176,13 +176,13 @@ SRI_plot_MS <- ggplot() +
         panel.background = element_rect(colour = 'white', fill = 'white'),
         panel.grid = element_blank(),
         plot.margin = unit(c(0.25, 0.25, 1, 1), 'cm'),
-        axis.text = element_text(size = 15, colour = 'black'),
-        legend.text = element_text(size = 15, colour = 'black'),
-        legend.title = element_text(size = 15, colour = 'black'),
+        axis.text = element_text(size = 13, colour = 'black'),
+        legend.text = element_text(size = 13, colour = 'black'),
+        legend.title = element_text(size = 13, colour = 'black'),
         axis.line = element_line(colour = 'black', linewidth = 1),
-        axis.title.x = element_text(size = 15, colour = 'black', vjust = -5),
-        axis.title.y = element_text(size = 15, colour = 'black', vjust = 5)) +
-  labs(x = 'Simple ratio index', y = 'Relative selection strength for open habitat')
+        axis.title.x = element_text(size = 13, colour = 'black', vjust = -5),
+        axis.title.y = element_text(size = 13, colour = 'black', vjust = 5)) +
+  labs(x = 'Simple ratio index', y = 'Log RSS for open habitat')
 
 ## 4- Write plots ====
 
@@ -190,7 +190,7 @@ ggsave("plots/presentation_NN_plot.pdf", NN_plot_pres, device = "pdf", width = 6
 ggsave("plots/presentation_Wang_plot.pdf", Wang_plot_pres, device = "pdf", width = 6, height = 5, units = "in", dpi = 400)
 ggsave("plots/presentation_SRI_plot.pdf", SRI_plot_pres, device = "pdf", width = 6, height = 5, units = "in", dpi = 400)
 
-ggsave("plots/MS_NN_plot.tiff", NN_plot_MS, device = "tiff", width = 6, height = 5, units = "in", dpi = 400)
-ggsave("plots/MS_Wang_plot.tiff", Wang_plot_MS, device = "tiff", width = 6, height = 5, units = "in", dpi = 400)
-ggsave("plots/MS_SRI_plot.tiff", SRI_plot_MS, device = "tiff", width = 6, height = 5, units = "in", dpi = 400)
+ggsave("plots/MS_NN_plot.tiff", NN_plot_MS, device = "tiff", width = 4.5, height = 4, units = "in", dpi = 400)
+ggsave("plots/MS_Wang_plot.tiff", Wang_plot_MS, device = "tiff", width = 4.5, height = 4, units = "in", dpi = 400)
+ggsave("plots/MS_SRI_plot.tiff", SRI_plot_MS, device = "tiff", width = 4.5, height = 4, units = "in", dpi = 400)
 
