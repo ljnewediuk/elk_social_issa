@@ -77,7 +77,7 @@ RSS.tables <- function(m) {
   predclosed <- p.pop(dat = DT, mod = issa, hab = 0)
   
   # Subtract the open vs closed (RSS difference)
-  logRSS = exp(predopen[[1]] - predclosed[[1]])
+  logRSS = predopen[[1]] - predclosed[[1]]
   
   # Individual RSS
   predclosedid <- lapply(
@@ -94,7 +94,7 @@ RSS.tables <- function(m) {
     Soc_Var = rep(seq(min(DT[[var_name]]), max(DT[[var_name]]), 
                       length.out = 100), times = 18)
   ) %>%
-    mutate(logRSS = exp(RSSdiff))
+    mutate(logRSS = RSSdiff)
   
   # Data frame for population RSS
   logRSSpop <- data.frame(
