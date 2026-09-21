@@ -41,9 +41,9 @@ DT[, cos_ta_ := cos(ta_)]
 
 # SRI of nearest neighbour at start of step
 # Log
-DT[, lsri_startNN := log(sri_startNN + 0.125)]
-# Centre
-DT[, lsri_start_c := (lsri_startNN - mean(lsri_startNN, na.rm=TRUE))]
+# DT[, lsri_startNN := log(sri_startNN + 0.125)]
+# # Centre
+# DT[, sri_start_c := (lsri_startNN - mean(lsri_startNN, na.rm=TRUE))]
 
 # Distance to nearest neighbour at start of step
 # Log
@@ -58,7 +58,7 @@ DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
 # DT[, Wang_Start_c := (Wang_Start_NN_corrected - mean(Wang_Start_NN_corrected, na.rm=TRUE))]
 
 # Save the model data for RSS
-saveRDS(DT, 'output/cleaned_model_data.rds')
+saveRDS(DT, 'output/cleaned_model_data_d.rds')
 
 ## 3- Define model covariates ====
 
@@ -83,10 +83,10 @@ prox_covs_d <- c(
 # closer to an individual with whom they share a higher SRI?)
 sri_covs_d <- c(
   'Open_end',
-  'lsri_start_c',
-  'lsri_start_c:Open_end',
+  'sri_startNN',
+  'sri_startNN:Open_end',
   '(1 | ANIMAL_ID)',
-  '(0 + lsri_start_c:Open_end | ANIMAL_ID)'
+  '(0 + sri_startNN:Open_end | ANIMAL_ID)'
 )
 
 # Kinship hypothesis (do elk select more for open habitat when starting their
@@ -123,8 +123,8 @@ fit_mod <- function(covs, nvar_parm, dat) {
             family = poisson(), 
             map = list(theta = factor(c(NA, 1:nvar_parm))),
             data = dat, doFit = F))
-  # Set variance of random intercept to large number (10,000)
-  model_form$parameters$theta[1] <- log(1e4)
+  # Set variance of random intercept to large number (10e6)
+  model_form$parameters$theta[1] <- log(1e6)
   # Fit model using large fixed variance
   model_fit <- glmmTMB:::fitTMB(model_form)
   # Return the glmmTMB object
@@ -137,11 +137,11 @@ model_prox_d <- fit_mod(c(base_covs, prox_covs_d), nvar_parm = nvar_parm, DT)
 model_wang_d <- fit_mod(c(base_covs, wang_covs_d), nvar_parm = nvar_parm, DT)
 
 # Save the models
-saveRDS(model_sri_d, 'models/issa_sri.rds')
-saveRDS(model_prox_d, 'models/issa_prox.rds')
-saveRDS(model_wang_d, 'models/issa_wang.rds')
+saveRDS(model_sri_d, 'models/issa_sri_d.rds')
+saveRDS(model_prox_d, 'models/issa_prox_d.rds')
+saveRDS(model_wang_d, 'models/issa_wang_d.rds')
 
 # Save model tables
-saveRDS(broom.mixed::tidy(model_sri_d), "models/table_sri_model.rds")
-saveRDS(broom.mixed::tidy(model_wang_d), "models/table_wang_model.rds")
-saveRDS(broom.mixed::tidy(model_prox_d), "models/table_sri_model.rds")
+saveRDS(broom.mixed::tidy(model_sri_d), "models/table_sri_d_model.rds")
+saveRDS(broom.mixed::tidy(model_wang_d), "models/table_wang_d_model.rds")
+saveRDS(broom.mixed::tidy(model_prox_d), "models/table_prox_d_model.rds")
