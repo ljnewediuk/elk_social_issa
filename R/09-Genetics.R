@@ -1,4 +1,7 @@
-## Genetics exploration##
+
+### 09 - Genetics exploration##
+
+### Packages ----
 libs <- c('tidyverse', 'dplyr', 'PopGenReport', 'adegenet', 'genetics','poppr')
 lapply(libs, require, character.only = TRUE)
 

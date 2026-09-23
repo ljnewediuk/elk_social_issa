@@ -1,11 +1,5 @@
 
-
-
-
-## NN and SRI derived data ====
-# Authors: Quinn Webber, ..., Eric Vander Wal
-# Inputs: Cleaned collar data
-# Outputs: combined SRI and NN file
+### 05 - NN and SRI derived data ====
 
 ### Packages ----
 libs <- c('data.table')
@@ -80,7 +74,6 @@ vita3 [,c("ID1", "ID2") := NULL]
 vita3<- vita3 %>% 
   rename(sri_EndNN = sri)
 
-
 ## extract EndNN_ID and IDYrIter from main dataset
 #EndNN <- data.table(membershipNN = mods$membership, 
 #                    EndIDYrIter = mods$IDYrIter)
@@ -92,7 +85,6 @@ vita3<- vita3 %>%
 #DT$comm[DT$comm == "FALSE"] <- "Different"
 
 #DT[, c("EndIDYrIter") := NULL]
-
 
 #Add relatedness information into the dataset for issa
 R <- read.csv ("data/Vita_Elk_Wang_Relatedness_18ind.csv")
@@ -159,8 +151,6 @@ vita5 [,c("ID1", "ID2") := NULL]
 
 vita5<- vita5 %>% 
   rename(Wang_Start_NN = Relatedness)
-
-
 
 
 saveRDS(vita5, "output/ZOE/5-rdm-locs-sri-NN-N10.RDS")

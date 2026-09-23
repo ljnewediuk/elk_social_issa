@@ -1,7 +1,5 @@
-## Cleaned Locs - generate random points ====
-# Authors: Quinn Webber, ..., Eric Vander Wal
-# Inputs: Cleaned collar data + NN
-# Outputs: 
+
+### 02 - Cleaned Locs - generate random points ====
 
 ### Packages ----
 libs <- c('data.table', 'ggplot2', 'rgdal', 'spatsoc', 'amt',
@@ -160,9 +158,6 @@ r1_total$Cover_end[is.na(r1_total$Cover_end)] <- "NotAvailable"
 
 ## check number of fixes by habitat type: 
 #r1_total[, .N, by = "Value"]
-
-
-
 
 ## assign value to each iteration
 r1_total <- r1_total %>% group_by(IDYr, step_id_) %>% mutate(iter = seq_len(n())) %>% ungroup()

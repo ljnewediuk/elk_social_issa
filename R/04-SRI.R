@@ -1,9 +1,5 @@
 
-
-## Cleaned Locs -  SRI ====
-# Authors: Quinn Webber, ..., Eric Vander Wal
-# Inputs: Cleaned collar data
-# Outputs: SRI  file
+### 04 - Cleaned Locs -  SRI ====
 
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'igraph', 'dplyr')

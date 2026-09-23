@@ -1,6 +1,5 @@
 
-
-### All Locs - Cleaning ====
+### 01 - All Locs - Cleaning ====
 
 ### Packages ----
 libs <- c('data.table', 'ggplot2', 'rgdal', 'lubridate','dplyr', 'tidyverse', 'sf')
@@ -30,7 +29,6 @@ vita_elk$lagYear <- ifelse(vita_elk$Year %in% c("2019"), 'Year1',
                             
 ### ID by lag Yr
 vita_elk$IDLagYr <- paste(vita_elk$animal_ID, vita_elk$lagYear, sep = "_")
-
 
 #Rename datetime column
 names(vita_elk)[names(vita_elk) == "dat_time"] <- "datetime"

@@ -1,6 +1,5 @@
 
-## Modified iSSA (smaller models for hypothesis testing) ##
-## By Levi Newediuk, modified December 2025 from Zoe Melvin
+### 06 - ISSA models ====
 
 ## 1- Prep workspace ====
 
@@ -33,7 +32,7 @@ DT<- filter (DT, Cover_start != "NotAvailable")
 DT$Open_start <- ifelse(DT$Cover_start == 'Open', 1, 0)
 DT$Open_end <- ifelse(DT$Cover_end == 'Open', 1, 0)
 
-# Center, scale, and log variables for model convergence/intepretation
+# Log variables for model convergence/intepretation
 
 # Step lengths and turn angles
 DT[, log_sl_ := log(sl_ + 1e-6)]
@@ -42,17 +41,10 @@ DT[, cos_ta_ := cos(ta_)]
 # SRI of nearest neighbour at start of step
 # Log
 DT[, lsri_startNN := log(sri_startNN + 0.125)]
-# # Centre
-# DT[, sri_start_c := (lsri_startNN - mean(lsri_startNN, na.rm=TRUE))]
 
 # Distance to nearest neighbour at start of step
 # Log
 DT[, lStartDist := log(StartDist + 0.125)]
-# Centre
-DT[, lStartDist_c := (lStartDist - mean(lStartDist, na.rm=TRUE))]
-
-# Relatedness of nearest neighbour at start of step (centre only)
-DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
 
 # Corrected
 # DT[, Wang_Start_c := (Wang_Start_NN_corrected - mean(Wang_Start_NN_corrected, na.rm=TRUE))]
@@ -139,11 +131,8 @@ model_sri_d <- fit_mod(c(base_covs, sri_covs_d), nvar_parm = nvar_parm, DT)
 model_prox_d <- fit_mod(c(base_covs, prox_covs_d), nvar_parm = nvar_parm, DT)
 model_wang_d <- fit_mod(c(base_covs, wang_covs_d), nvar_parm = nvar_parm, DT)
 
-# Null models
+# Null model (habitat-only)
 model_null <- fit_mod(c(base_covs, null_covs), nvar_parm = 1, DT)
-
-# Likelihood ratio tests
-r.squaredLR(model_sri_d, model_null)
 
 # Save the models
 saveRDS(model_sri_d, 'models/issa_sri_d.rds')

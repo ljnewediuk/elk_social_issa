@@ -1,15 +1,10 @@
-## Cleaned Locs - Calculate NN ====
-# Authors: Quinn Webber, ..., Eric Vander Wal
-# Inputs: Cleaned collar data w/ rdm points
-# Outputs: Cleaned collar data + NNID + NNdist 
+
+### 03 - Cleaned Locs - Calculate NN ====
 
 ### Packages ----
 libs <- c( 'ggplot2', 'rgdal',  'data.table',
            'spatsoc', 'igraph','devtools', 'asnipe')
 lapply(libs, require, character.only = TRUE)
-
-#devtools::install_github('ropensci/spatsoc')
-#install_local("/Users/quinnwebber/Downloads/data.table-1.12.6.zip")
 
 ### Input raw data ----
 DT <- setDT(readRDS("output/ZOE/2-clean-all-rdm-N10.RDS"))
@@ -29,6 +24,7 @@ DT <- DT[order(DT$timegroup),]
 DT$IDYrTimeIter <- as.factor(paste(DT$IDYr, DT$timegroup, DT$iter, sep = "_"))
 #DT$STARTIDYrTimeIter <- as.factor(paste(DT$IDYr, DT$timegroupStart, DT$iter, sep = "_"))
 #DT$ENDIDYrTimeIter <- as.factor(paste(DT$IDYr, DT$timegroupEnd, DT$iter, sep = "_"))
+
 #####################################################
 ############# CALCULDATE DISTANCE ##################
 ####################################################
@@ -46,7 +42,6 @@ edistStart$IDYrTimeIter <- as.factor(paste(edistStart$ID1,
                                            edistStart$iter, sep = "_"))
 edistStart[,c("ID1", "timegroup", "iter", "Year") := NULL]
 colnames(edistStart)[1] <- "StartNN_ID"
-
 
 ## Nearest neighbor at end step
 edistEnd <- edge_dist(DT = DT, id = 'IDYr', coords = c('x2_', 'y2_'),
