@@ -13,7 +13,7 @@ DT <- readRDS("output/cleaned_model_data.rds")
 
 # Load models
 issa_wang <- readRDS("models/issa_wang.rds")
-issa_sri <- readRDS("models/issa_sri.rds")
+issa_sri <- readRDS("models/issa_sri_d.rds")
 issa_prox <- readRDS("models/issa_prox.rds")
 
 ## 2- Define functions to calculate RSS ====
@@ -26,8 +26,8 @@ p.pop <- function(dat, mod, hab) {
     sl_ = mean(dat$sl_, na.rm = T),
     ta_ = mean(dat$ta_, na.rm = T),
     Open_end = hab,
-    lsri_start_c = seq(min(dat$lsri_start_c), max(dat$lsri_start_c), length.out = 100),
-    Wang_Start_c = seq(min(dat$Wang_Start_c), max(dat$Wang_Start_c), length.out = 100),
+    sri_startNN = seq(min(dat$lsri_startNN), max(dat$lsri_startNN), length.out = 100),
+    Wang_Start_c = seq(min(dat$Wang_Start_NN), max(dat$Wang_Start_NN), length.out = 100),
     lStartDist = seq(-7, 1.5, length.out = 100),
     elk_step_id_ = NA,
     ANIMAL_ID = NA
@@ -49,8 +49,8 @@ p.id <- function(dat, mod, hab, id) {
     sl_ = mean(dat$sl_, na.rm = T),
     ta_ = mean(dat$ta_, na.rm = T),
     Open_end = hab,
-    lsri_start_c = seq(min(dat$lsri_start_c), max(dat$lsri_start_c), length.out = 100),
-    Wang_Start_c = seq(min(dat$Wang_Start_c), max(dat$Wang_Start_c), length.out = 100),
+    sri_startNN = seq(min(dat$lsri_startNN), max(dat$lsri_startNN), length.out = 100),
+    Wang_Start_c = seq(min(dat$Wang_Start_NN), max(dat$Wang_Start_N), length.out = 100),
     lStartDist = seq(-7, 1.5, length.out = 100),
     elk_step_id_ = NA,
     ANIMAL_ID = id

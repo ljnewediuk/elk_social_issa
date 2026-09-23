@@ -41,7 +41,7 @@ DT[, cos_ta_ := cos(ta_)]
 
 # SRI of nearest neighbour at start of step
 # Log
-# DT[, lsri_startNN := log(sri_startNN + 0.125)]
+DT[, lsri_startNN := log(sri_startNN + 0.125)]
 # # Centre
 # DT[, sri_start_c := (lsri_startNN - mean(lsri_startNN, na.rm=TRUE))]
 
@@ -58,7 +58,7 @@ DT[, Wang_Start_c := (Wang_Start_NN - mean(Wang_Start_NN, na.rm=TRUE))]
 # DT[, Wang_Start_c := (Wang_Start_NN_corrected - mean(Wang_Start_NN_corrected, na.rm=TRUE))]
 
 # Save the model data for RSS
-saveRDS(DT, 'output/cleaned_model_data_d.rds')
+saveRDS(DT, 'output/cleaned_model_data.rds')
 
 ## 3- Define model covariates ====
 
@@ -83,21 +83,24 @@ prox_covs_d <- c(
 # closer to an individual with whom they share a higher SRI?)
 sri_covs_d <- c(
   'Open_end',
-  'sri_startNN',
-  'sri_startNN:Open_end',
+  'lsri_startNN',
+  'lsri_startNN:Open_end',
   '(1 | ANIMAL_ID)',
-  '(0 + sri_startNN:Open_end | ANIMAL_ID)'
+  '(0 + lsri_startNN:Open_end | ANIMAL_ID)'
 )
 
 # Kinship hypothesis (do elk select more for open habitat when starting their
 # step closer to an individual to whom they are more closely related?)
 wang_covs_d <- c(
   'Open_end',
-  'Wang_Start_c',
-  'Wang_Start_c:Open_end',
+  'Wang_Start_NN',
+  'Wang_Start_NN:Open_end',
   '(1 | ANIMAL_ID)',
-  '(0 + Wang_Start_c:Open_end | ANIMAL_ID)'
+  '(0 + Wang_Start_NN:Open_end | ANIMAL_ID)'
 )
+
+null_covs <- c('Open_end',
+               '(1 | ANIMAL_ID)')
 
 ## 4- Fit models ====
 
@@ -124,7 +127,7 @@ fit_mod <- function(covs, nvar_parm, dat) {
             map = list(theta = factor(c(NA, 1:nvar_parm))),
             data = dat, doFit = F))
   # Set variance of random intercept to large number (10e6)
-  model_form$parameters$theta[1] <- log(1e6)
+  model_form$parameters$theta[1] <- log(1e4)
   # Fit model using large fixed variance
   model_fit <- glmmTMB:::fitTMB(model_form)
   # Return the glmmTMB object
@@ -136,12 +139,20 @@ model_sri_d <- fit_mod(c(base_covs, sri_covs_d), nvar_parm = nvar_parm, DT)
 model_prox_d <- fit_mod(c(base_covs, prox_covs_d), nvar_parm = nvar_parm, DT)
 model_wang_d <- fit_mod(c(base_covs, wang_covs_d), nvar_parm = nvar_parm, DT)
 
+# Null models
+model_null <- fit_mod(c(base_covs, null_covs), nvar_parm = 1, DT)
+
+# Likelihood ratio tests
+r.squaredLR(model_sri_d, model_null)
+
 # Save the models
 saveRDS(model_sri_d, 'models/issa_sri_d.rds')
 saveRDS(model_prox_d, 'models/issa_prox_d.rds')
 saveRDS(model_wang_d, 'models/issa_wang_d.rds')
+saveRDS(model_null, 'models/issa_null.rds')
 
 # Save model tables
 saveRDS(broom.mixed::tidy(model_sri_d), "models/table_sri_d_model.rds")
 saveRDS(broom.mixed::tidy(model_wang_d), "models/table_wang_d_model.rds")
 saveRDS(broom.mixed::tidy(model_prox_d), "models/table_prox_d_model.rds")
+saveRDS(broom.mixed::tidy(model_null), "models/table_null_model.rds")
