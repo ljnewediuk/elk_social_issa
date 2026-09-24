@@ -12,6 +12,7 @@
 
 # Large files/scratch files
 /output
+/plots
 /models
 /old_code
 
